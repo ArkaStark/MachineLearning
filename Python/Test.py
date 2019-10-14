@@ -37,9 +37,9 @@ Y = np.reshape(Y, (Y.shape[0],1))
 
 mod = Model.LinearRegression(X, Y, d=3)
 
-cost = mod.train(alpha=0.00000035, n=2000, batch_size=X.shape[0], reg=0.03)
+cost = mod.train(alpha=0.00000035, n=2000, batch_size=0, reg=0.03)
 Y_ = mod.predict(X)
-visdata.plot_cost(J=cost[:, 1], i=cost[:, 0], interval=10, fig=2)
+visdata.plot_cost(cost, interval=10, fig=2)
 visdata.plot_data(x=X[:,1], y=Y_, xl='Area', yl='Prices', line=True, fig=1)
 
 
