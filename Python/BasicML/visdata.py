@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as mp
 from mpl_toolkits import  mplot3d
 import numpy as np
+import math
 
 
 def plot_data(d=[], x=0, y=0, m='rx', xl='', yl='', zl='', line=False, fig=1):
@@ -32,14 +33,22 @@ def plot_data(d=[], x=0, y=0, m='rx', xl='', yl='', zl='', line=False, fig=1):
     figure.canvas.draw()
 
 
-def plot_cost(J, i, interval=1, fig=1):
-    figure = mp.figure(fig)
-    if interval != 1:
-        _J = [J[int(x-1)] for x in i if x%interval==0]
-        _i = [int(x) for x in i if x%interval==0]
-        sns.lineplot(_i, _J)
+def plot_cost(Cost, interval=1, fig=1):
+    fig = mp.figure(fig, figsize=(10, 10))
+    cost, b, i, m = Cost['J'], Cost['batch_size'], Cost['iter'], Cost['m']
+    if b:
+        b = math.ceil(m/b)
+        b_J = cost.flatten()
+        b_J = [b_J[x] for x in range(i*b) if (x+1) % interval == 0]
+        _b = [int(x+1) for x in range(i*b) if (x+1) % interval == 0]
+        mp.plot(_b, b_J, label='Cost per batch')
     else:
-        sns.lineplot(i, J)
+        b = 1
+    J = [cost[x, -1] for x in range(i) if (x+1) % interval == 0]
+    _i = [int((x+1)*b) for x in range(i) if (x+1) % interval == 0]
+    mp.plot(_i, J, linestyle='--', label='Cost per epoch')
+    mp.legend()
+    #mp.xticks(_i*b, np.int64(_i))
     mp.xlabel('Iterations every '+str(interval)+' interval')
     mp.ylabel('Cost')
-    figure.canvas.draw()
+    fig.canvas.draw()
