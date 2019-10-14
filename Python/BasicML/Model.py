@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 class LinearRegression:
@@ -43,25 +44,38 @@ class LinearRegression:
         dw[1:] = (x[:,1:].T@(x@w - y) + reg*w[1:])/m
         return dw
 
-    def train(self, alpha=0.001, batch_size=1, n=1000, reg=0):
-        cost = np.zeros((n,2))
+    def train(self, alpha=0.001, batch_size=0, n=1000, reg=0):
         self.x = self.add_poly_feat(self.x)
         self.initiate_weights()
         ind = np.random.permutation(self.m)
         X = self.x[ind]
         Y = self.y[ind]
-        for i in range(n):
-            for j in range(self.m//batch_size):
-                x = X[j*batch_size:(j+1)*batch_size, :]
-                y = Y[j*batch_size:(j+1)*batch_size, :]
-                self.w = self.w-alpha*self.gradients(x, y, self.w, reg)
-            if self.m % batch_size != 0:
-                x = X[self.m//batch_size*batch_size:self.m]
-                y = Y[self.m//batch_size*batch_size:self.m]
-            self.w = self.w - alpha*self.gradients(x, y, self.w, reg)
-            print("Cost after", i+1, "Iterations : ", self.cost_fn(reg))
-            cost[i,0] = i+1
-            cost[i,1] = self.cost_fn(reg)
+        if batch_size == 0:
+            cost = np.zeros((n, 1))
+            for i in range(n):
+                self.w = self.w - alpha*self.gradients(X, Y, self.w, reg)
+                print("Cost after", i + 1, "Iterations : ", self.cost_fn(reg))
+                cost[i] = self.cost_fn(reg)
+        else:
+            cost = np.zeros((n, math.ceil(self.m / batch_size)))
+            for i in range(n):
+                print("Iteration", i+1, " : ")
+                for j in range(self.m//batch_size):
+                    x = X[j*batch_size:(j+1)*batch_size, :]
+                    y = Y[j*batch_size:(j+1)*batch_size, :]
+                    self.w = self.w-alpha*self.gradients(x, y, self.w, reg)
+                    print("\tBatch", j+1, "Cost : ", self.cost_fn(reg))
+                    cost[i, j] = self.cost_fn(reg)
+                if self.m % batch_size != 0:
+                    x = X[self.m//batch_size*batch_size:self.m]
+                    y = Y[self.m//batch_size*batch_size:self.m]
+                    self.w = self.w - alpha*self.gradients(x, y, self.w, reg)
+                    print("\tBatch", j + 2, "Cost : ", self.cost_fn(reg))
+                    cost[i, j+1] = self.cost_fn(reg)
+        cost = {'J' : cost,
+                'batch_size' : batch_size,
+                'iter' : n,
+                'm' : self.m}
         print("\nFinal weights after training : ", self.w)
         return cost
 
